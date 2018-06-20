@@ -22,4 +22,5 @@ B.palette = colorRampPalette(brewer.pal(9,"Blues"))(800)
 palette(rgb.palette(600)) 
 #palette(B.palette)
 #cex=.4  This will make the plot elements larger or smaller
+#id=rep('', nrow(ped)) will make the numbers under the nodes blank
 plot.pedigree(x = ped,col = z,cex=.4,id=rep('', nrow(ped)))
