@@ -13,12 +13,13 @@ ped <- pedigree(id = ID,dadid = father,momid = mother,sex = sex,affected = affec
 
 #plot(ped,col = z)
 #red is low and blue is high
-rgb.palette <- colorRampPalette(c("red", "white",
-                                   "blue"), space = "rgb")
+rgb.palette <- colorRampPalette(c("red", "orange","yellow","green","blue","purple"), space = "rgb")
+# rgb.palette <- colorRampPalette(c("red", "white",
+#                                   "blue"), space = "rgb")
 #rgb.palette <- colorRampPalette(c("red","blue"), space = "rgb")(800)
      
 B.palette = colorRampPalette(brewer.pal(9,"Blues"))(800)
 palette(rgb.palette(600)) 
 #palette(B.palette)
 #cex=.4  This will make the plot elements larger or smaller
-plot(ped,col = z,cex=.4)
+plot.pedigree(x = ped,col = z,cex=.4,id=rep('', nrow(ped)))
