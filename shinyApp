@@ -1,0 +1,390 @@
+##The user should install the following packages before running the app
+#Type in R the following: 
+#install.packages("shiny)
+#install.packages("glue")
+#install.packages("readxl")
+#install.packages("kinship2)
+#install.packages("tools")
+#install.packages("shinythemes")
+#install.packages("quadprog")
+#install.packages("Matrix")
+#install.packages("shinycssloaders")
+#install.packages("shinycustomloader")
+
+##Things that should be fixed: 
+#message if the columns were not the ones that we seek
+#change if statement to switch
+#try NA for coloring stuff grey
+
+
+#shiny deploy error
+#Unable to determine package source for Bioconductor package BiocGenerics: Repository must be specified 
+#options(repos = BiocInstaller::biocinstallRepos())
+
+library(shiny)
+library(glue)
+library(readxl)
+library(kinship2)
+library(Matrix)
+library(quadprog)
+library(igraph)
+library(FamAgg)
+library(tools)
+library(shinythemes)
+library(shinycssloaders)
+library(shinycustomloader)
+
+
+#Set maximum upload size to 1000 mb
+options(shiny.maxRequestSize = 1000*1024^2)
+
+#chaining conditions together with the %then% operator, to display one validation error message at a time.  
+`%then%` <- shiny:::`%OR%`
+
+#Function 'Check' to check for errors in the excel file and validate for them, in order not to cause any failure in ploting the pedigree
+#Error might be caused for missing IDs & variables / Duplicated IDs
+Check <- function(inputFile, id, dadid, momid, sex, affected){
+  for(i in  1:nrow(inputFile)){
+    shiny::validate(
+      need((id[i]!= "NA"), label = "Missing value for the  'ID' variable! Please check your input excel file. All variables")%then%
+        need(!any((duplicated(id))), label = "Duplicated ID exists! Please check your input excel file. Unique ID variables")%then%
+        need((dadid[i]!= "NA"), label = "Missing value for the 'father' ID variable Please check your input excel file. All variables")%then%
+        need((momid[i] != "NA"), label= "Missing value for the 'mother' ID variable! Please check your input excel file. All variables")%then%
+        need((sex[i] != "NA"), label = "Missing value for the 'sex' variable! Please check your input excel file. All variables")%then%
+        need((affected[i] != "NA"), label = "Missing value for the 'affected' variable! Please check your input excel file. All variables"),
+      errorClass = "MyClass"
+    )
+  }
+  
+}
+
+
+
+# UI for Shiny
+ui <-
+  fluidPage( title = "Pedigree Chart App", style = "margin:50px;",
+             
+             #Include Styling for the app
+           #  includeCSS(path = "www/css/style.css"),
+             
+             
+             #shinythemes::themeSelector(),
+             theme = shinytheme("readable"),
+             fluidRow(
+               column(width = 10,
+                      img( src = "pedigree3.jpg"),
+                      tags$br(),
+                      tags$br(),
+                      h1("GENEALOTREE"),
+                      tags$hr()
+                      
+               ),
+               column(width = 2,
+                      actionButton(inputId = "reloadApp",label = "Reload App", class="btn-danger")
+               )
+             ),
+             tags$br(),
+             tags$br(),
+             tabsetPanel( id = "TheMainTabs",
+                          tabPanel( title ="Upload File",
+                                    fluidRow(
+                                      column(width = 3,
+                                             wellPanel(id="UploadFile",
+                                                       fileInput(inputId = "Selectedfile",
+                                                                 label = "Step 1: Select Your File:    (You have to upload an excel File)",
+                                                                 multiple = FALSE,
+                                                                 accept=c('application/vnd.ms-excel',
+                                                                          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                                                          '.xls',
+                                                                          '.xlsx')),
+                                                       actionButton(inputId = "SubmitButtonToColor",label = "Display")
+                                                       
+                                             ),
+                                             wellPanel(id = "ColumnSelect", 
+                                                       selectizeInput(inputId = "SelectedColumn",
+                                                                      label = "Step 2: Choose the dependent column to color the plot",
+                                                                      choices = NULL,
+                                                                      selected = NULL
+                                                       )
+                                                       
+                                             ),
+                                             wellPanel(id = "ChoosingColor",
+                                                       selectizeInput(inputId = "SelectedColors",
+                                                                      label = "Step 3: Choose a range of colors to color your pedigree",
+                                                                      choices = c("blue", "green", "yellow", "orange", "red"),
+                                                                      options = list(maxItems = 5),
+                                                                      selected = NULL,
+                                                                      multiple = TRUE
+                                                       ),
+                                                       actionButton(inputId = "SubmitButtonToPlot",label = "Plot")
+                                             )
+                                             
+                                      ),
+                                      column(width=9,
+                                             dataTableOutput(outputId = "contents")
+                                      )
+                                    )
+                          ),
+                          
+                          tabPanel(title = "Plot",
+                                   fluidRow(
+                                     column(width=2, 
+                                            wellPanel(id = "buildSubpedigree",
+                                                      selectizeInput(inputId = "SelectedIDs",
+                                                                     label = "Choose individual IDs to plot subpedigree",
+                                                                     choices = NULL,
+                                                                     selected = NULL,
+                                                                     multiple = TRUE
+                                                      )
+                                            )
+                                     ),
+                                     column(width=10,
+                                            wellPanel(id="PlotPedigreeOutput",
+                                                      tabsetPanel(id = "PlotwellPanel",
+                                                                  tabPanel(title = "Pedigree", 
+                                                                           plotOutput("pedigreePlot", height = "700px"), 
+                                                                           tags$br(),
+                                                                           downloadButton(outputId = "downloadPedigree_png", label = "Download as PNG"),
+                                                                           downloadButton(outputId = "downloadPedigree_pdf", label = "Download as PDF")
+                                                                  ),
+                                                                  tabPanel(title = "Subpedigree", 
+                                                                           plotOutput("subpedigreeplot", height = "700px"),
+                                                                           tags$br(),
+                                                                           downloadButton(outputId = "downloadsubPedigree", label = "Download Plot")
+                                                                  )
+                                                      )
+                                            )
+                                     )
+                                   )
+                                   
+                          )
+                          
+             )
+  )
+
+
+
+
+#Shiny Server
+server <- function(input, output, session){
+  
+  # Reload App
+  observeEvent(input$reloadApp, {
+    session$reload()
+  })
+  
+  
+  #Validating for errors that might cause pedigree ploting to fail
+  #To give an error for missing IDs using validate in R/ Duplicated IDs
+  ##  observeEvent(input$Selectedfile, { 
+  
+  
+  #This should be updated
+  ##    pedigreefile <- read_excel(path =input$Selectedfile$datapath, sheet = 1, col_names = TRUE)
+  #  attach(pedigreefile)
+  #   Check(pedigreefile, ID, father, mother, sex, affected)    #The user has to put the variable names according to the column names in his/her the excel file: such as mother/father/....
+  ##  })
+  
+  
+  #Select the column you want the color of the pedigree plot to be based on
+  observeEvent(input$Selectedfile, {
+    
+    #Error needs to be fixed
+    #Error to be shown to user in case other than excel file types was uploaded
+    ext<-c('application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    excel_required <-is.element(input$Selectedfile$type,ext)
+    shiny::validate(
+      need(excel_required, label = "Input Excel File")
+    )
+    #req(input$Selectedfile)
+    pedigreefile <- read_excel(path =input$Selectedfile$datapath, sheet = 1, col_names = TRUE)
+    attach(pedigreefile)
+    NamesOfColumns <- colnames(pedigreefile)
+    updateSelectizeInput(session = session, inputId = "SelectedColumn", choices = NamesOfColumns, selected = NamesOfColumns[7])
+    updateSelectizeInput(session = session, inputId = "SelectedIDs", choices = ID)
+    
+  })
+  
+  
+  #### By clicking 'Submit' button, the user accesses the Color Tab
+  observeEvent(input$SubmitButtonToColor, {
+    if(is.null(input$Selectedfile)){
+      showNotification(ui="Please upload your file", duration = 5, closeButton = TRUE, type = "message")
+    }
+    
+    #display the contents of the uploaded excel file
+    output$contents <- renderDataTable(
+      #  Errordata()
+      
+      read_excel(path =input$Selectedfile$datapath, sheet = 1, col_names = TRUE)
+    )
+  })
+  
+  
+  #### By clicking the 'Submit' button, the user accesses the plot Tab
+  observeEvent(input$SubmitButtonToPlot, {
+    if(!is.null(input$SelectedColors)){
+      updateTabsetPanel(session = session, inputId = "TheMainTabs", selected = "Plot") 
+    }
+    else
+    {
+      showNotification(ui="Please choose colors to plot the pedigree", duration = 5, closeButton = TRUE, type = "error")
+    }
+  })
+  
+  #### Adjust the range of colors with respect to the selected column
+  observeEvent(input$SelectedColumn, {
+    switch(input$SelectedColumn, 
+           rorg = {
+             updateSelectizeInput(session = session, inputId = "SelectedColors",
+                                  options = list(maxItems = 5),
+                                  selected = NULL
+             )
+           },
+           affected = {
+             updateSelectizeInput(session = session, inputId = "SelectedColors",
+                                  options = list(maxItems = 1),
+                                  selected = NULL
+             )
+           },
+           strain = {
+             updateSelectizeInput(session = session, inputId = "SelectedColors",
+                                  options = list(maxItems = 5),
+                                  selected = NULL
+             )
+           },
+           IgA = {
+             updateSelectizeInput(session = session, inputId = "SelectedColors",
+                                  options = list(maxItems = 5),
+                                  selected = NULL
+             )
+             
+           }
+    )
+  })
+  
+  
+  #### Press Plot button to get the pedigree Plot colored 
+  observeEvent(input$SubmitButtonToPlot, { 
+    
+    output$pedigreePlot <- renderPlot({
+      
+      req(input$Selectedfile)
+      req(input$SelectedColors)
+      # data()
+      
+      pedigreefile <- input$Selectedfile
+      attach(pedigreefile)
+      #The user has to put the variable names according to the column names in his/her the excel file: such as mother/father/....
+      ped <- pedigree( id = ID,dadid = father,momid = mother,sex = sex,affected = affected)
+      fad <- FAData(pedigree = ped) 
+      
+      switch(input$SelectedColumn, 
+             rorg = {
+               req(input$SelectedColors)
+               rgb.palette <- colorRampPalette(c(input$SelectedColors, "purple", "black"), space = "rgb")
+               palette(rgb.palette(100))
+               z = rorg * 100
+               #id2 <- paste( ped$id, z, sep = "\n") (in case I want to add the Ids beneath it)
+               plot.pedigree(x = ped, col = z , cex=.7 , id= z)
+             },
+             affected = {
+               ColorPed <- input$SelectedColors
+               plot.pedigree(x = ped,col = ifelse(affected, ColorPed[1], ColorPed[2]), cex=.7)
+               #plot.pedigree(x = ped,col = "red", cex=.7)
+             },
+             strain = {
+               ColStrain <- c(input$SelectedColors)[as.factor(strain)]
+               plot.pedigree(x = ped, col = ColStrain, cex = .7)
+             },
+             IgA = {
+               req(input$SelectedColors)
+               rgb.palette <- colorRampPalette(c(input$SelectedColors, "purple", "black"), space = "rgb")
+               palette(rgb.palette(100))
+               zi = IgA * 100
+               plot.pedigree(x = ped, col = zi , cex=.7 , id=zi)
+             }
+             
+      )
+      
+      #Build subpedigree
+      observeEvent(input$SelectedIDs, {
+        output$subpedigreeplot <- renderPlot({ 
+          buildPed(fad, id = input$SelectedIDs, prune = TRUE)
+          plotPed(fad, id = input$SelectedIDs, prune = TRUE) 
+        })
+      })
+      
+      #Downlonad the pedigree plot as PNG
+      output$downloadPedigree_png <- downloadHandler(
+        filename = function(){
+          paste('PedigreePlot', '.png', sep = ' ')
+        },
+        content = function(file){
+          png(file, width = 1500, height = 800)
+          switch(input$SelectedColumn,
+                 rorg= {
+                   plot.pedigree(x = ped,col = z,cex=.7, id=z)
+                 },
+                 affected = {
+                   plot.pedigree(x = ped,col = ifelse(affected, ColorPed[1], ColorPed[2]),cex=.7)
+                 },
+                 strain = {
+                   plot.pedigree(x = ped, col = ColStrain, cex = .7)
+                 },
+                 IgA = {
+                   plot.pedigree(x = ped, col = zi , cex=.7 , id=zi)
+                 }
+          )
+          dev.off()
+        }
+      )
+      
+      #Downlonad the pedigree plot as PDF
+      output$downloadPedigree_pdf <- downloadHandler(
+        filename = function(){
+          "PedigreePlot.pdf"
+        },
+        content = function(file){
+          pdf(file)
+          switch(input$SelectedColumn,
+                 rorg= {
+                   plot.pedigree(x = ped,col = z,cex=.7, id=z)
+                 },
+                 affected = {
+                   plot.pedigree(x = ped,col = ifelse(affected, ColorPed[1], ColorPed[2]),cex=.7)
+                 },
+                 strain = {
+                   plot.pedigree(x = ped, col = ColStrain, cex = .7)
+                 },
+                 IgA = {
+                   plot.pedigree(x = ped, col = zi , cex=.7 , id=zi)
+                 }
+          )
+          dev.off()
+        }
+      )
+      
+      #Download the subpedigree Plot
+      output$downloadsubPedigree <- downloadHandler(
+        filename = function(){
+          paste('SubPedigreePlot', '.png', sep = ' ')
+        },
+        content = function(file){
+          png(file, width = 1500, height = 800)
+          buildPed(fad, id = input$SelectedIDs, prune = TRUE)
+          plotPed(fad, id = input$SelectedIDs, prune = TRUE) 
+          dev.off()
+        }
+      ) 
+      
+    })
+  })
+  
+  
+  #To enable new-session reconnections, in case the client has disconnected from the server (and has reached a gray-out state)
+  session$allowReconnect(TRUE)
+  
+}
+
+shinyApp(ui = ui, server = server)
