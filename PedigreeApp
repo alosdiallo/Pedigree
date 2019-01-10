@@ -14,7 +14,7 @@
 ##Things that should be fixed: 
 #message if the columns were not the ones that we seek
 #change if statement to switch
-#try NA for coloring stuff grey
+#I have to search for the NA and replace them by 1 in rorg and Iga data (or columns similar to them)
 
 
 #shiny deploy error
@@ -65,19 +65,16 @@ ui <-
   fluidPage( title = "Pedigree Chart App", style = "margin:50px;",
              
              #Include Styling for the app
-           #  includeCSS(path = "www/css/style.css"),
+             #  includeCSS(path = "www/css/style.css"),
              
              
              #shinythemes::themeSelector(),
              theme = shinytheme("readable"),
              fluidRow(
                column(width = 10,
-                      img( src = "pedigree3.jpg"),
-                      tags$br(),
-                      tags$br(),
-                      h1("GENEALOTREE"),
+                      img( src = "dzar.png"),
+                      #tags$br(),
                       tags$hr()
-                      
                ),
                column(width = 2,
                       actionButton(inputId = "reloadApp",label = "Reload App", class="btn-danger")
@@ -85,38 +82,47 @@ ui <-
              ),
              tags$br(),
              tags$br(),
-             tabsetPanel( id = "TheMainTabs",
+             tabsetPanel( id = "TheMainTabs", type = "pills",
                           tabPanel( title ="Upload File",
                                     fluidRow(
                                       column(width = 3,
-                                             wellPanel(id="UploadFile",
+                                             tags$br(),
+                                             wellPanel(id="UploadFile", 
                                                        fileInput(inputId = "Selectedfile",
-                                                                 label = "Step 1: Select Your File:    (You have to upload an excel File)",
+                                                                 label = "Select Your File:    (You have to upload an excel File)",
                                                                  multiple = FALSE,
                                                                  accept=c('application/vnd.ms-excel',
                                                                           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                                                           '.xls',
                                                                           '.xlsx')),
-                                                       actionButton(inputId = "SubmitButtonToColor",label = "Display")
-                                                       
-                                             ),
-                                             wellPanel(id = "ColumnSelect", 
+                                                       actionButton(inputId = "SubmitButtonToColor",label = "Display"),
+                                                       tags$br(),
+                                                       hr(),
                                                        selectizeInput(inputId = "SelectedColumn",
-                                                                      label = "Step 2: Choose the dependent column to color the plot",
+                                                                      label = "Choose the dependent column to color the plot",
                                                                       choices = NULL,
                                                                       selected = NULL
-                                                       )
-                                                       
-                                             ),
-                                             wellPanel(id = "ChoosingColor",
+                                                       ),
+                                                       selectizeInput(inputId = "SelectedColumnType",
+                                                                      label = "Type of column selected",
+                                                                      choices = c("character", "numeric"),
+                                                                      selected = NULL
+                                                       ),
+                                                       hr(),
                                                        selectizeInput(inputId = "SelectedColors",
-                                                                      label = "Step 3: Choose a range of colors to color your pedigree",
+                                                                      label = "Choose a range of colors to color the tree",
                                                                       choices = c("blue", "green", "yellow", "orange", "red"),
                                                                       options = list(maxItems = 5),
                                                                       selected = NULL,
                                                                       multiple = TRUE
                                                        ),
-                                                       actionButton(inputId = "SubmitButtonToPlot",label = "Plot")
+                                                                 selectizeInput(inputId = "ShowByID",
+                                                                                label = "Visualize the pedigree By",
+                                                                                choices = c("ID", "values", "both"),
+                                                                                selected = NULL,
+                                                                                multiple = FALSE
+                                                                 ),
+                                                                 actionButton(inputId = "SubmitButtonToPlot",label = "Plot")
                                              )
                                              
                                       ),
@@ -129,6 +135,7 @@ ui <-
                           tabPanel(title = "Plot",
                                    fluidRow(
                                      column(width=2, 
+                                            tags$br(),
                                             wellPanel(id = "buildSubpedigree",
                                                       selectizeInput(inputId = "SelectedIDs",
                                                                      label = "Choose individual IDs to plot subpedigree",
@@ -234,33 +241,24 @@ server <- function(input, output, session){
   
   #### Adjust the range of colors with respect to the selected column
   observeEvent(input$SelectedColumn, {
-    switch(input$SelectedColumn, 
-           rorg = {
-             updateSelectizeInput(session = session, inputId = "SelectedColors",
-                                  options = list(maxItems = 5),
-                                  selected = NULL
-             )
-           },
-           affected = {
-             updateSelectizeInput(session = session, inputId = "SelectedColors",
-                                  options = list(maxItems = 1),
-                                  selected = NULL
-             )
-           },
-           strain = {
-             updateSelectizeInput(session = session, inputId = "SelectedColors",
-                                  options = list(maxItems = 5),
-                                  selected = NULL
-             )
-           },
-           IgA = {
-             updateSelectizeInput(session = session, inputId = "SelectedColors",
-                                  options = list(maxItems = 5),
-                                  selected = NULL
-             )
-             
-           }
-    )
+    if (input$SelectedColumn == "affected"){
+      updateSelectizeInput(session = session, inputId = "SelectedColors",
+                           options = list(maxItems = 1),
+                           selected = NULL
+      )
+    }
+    else if (input$SelectedColumn == "sex"){
+      updateSelectizeInput(session = session, inputId = "SelectedColors",
+                           options = list(maxItems = 2),
+                           selected = NULL
+      )
+    }
+    else{
+      updateSelectizeInput(session = session, inputId = "SelectedColors",
+                           options = list(maxItems = 5),
+                           selected = NULL
+      )
+    }
   })
   
   
@@ -278,34 +276,45 @@ server <- function(input, output, session){
       #The user has to put the variable names according to the column names in his/her the excel file: such as mother/father/....
       ped <- pedigree( id = ID,dadid = father,momid = mother,sex = sex,affected = affected)
       fad <- FAData(pedigree = ped) 
-      
-      switch(input$SelectedColumn, 
-             rorg = {
-               req(input$SelectedColors)
-               rgb.palette <- colorRampPalette(c(input$SelectedColors, "purple", "black"), space = "rgb")
-               palette(rgb.palette(100))
-               z = rorg * 100
-               #id2 <- paste( ped$id, z, sep = "\n") (in case I want to add the Ids beneath it)
-               plot.pedigree(x = ped, col = z , cex=.7 , id= z)
-             },
-             affected = {
-               ColorPed <- input$SelectedColors
-               plot.pedigree(x = ped,col = ifelse(affected, ColorPed[1], ColorPed[2]), cex=.7)
-               #plot.pedigree(x = ped,col = "red", cex=.7)
-             },
-             strain = {
-               ColStrain <- c(input$SelectedColors)[as.factor(strain)]
-               plot.pedigree(x = ped, col = ColStrain, cex = .7)
-             },
-             IgA = {
-               req(input$SelectedColors)
-               rgb.palette <- colorRampPalette(c(input$SelectedColors, "purple", "black"), space = "rgb")
-               palette(rgb.palette(100))
-               zi = IgA * 100
-               plot.pedigree(x = ped, col = zi , cex=.7 , id=zi)
-             }
-             
+      val <- paste(get(input$SelectedColumn))
+    
+     
+      if (input$SelectedColumnType == "character"){  #character values
+        #if (is.na(as.numeric(input$SelectedColumn)))
+        ColStrain <- c(input$SelectedColors)[as.factor(get(input$SelectedColumn))]
+        switch (input$ShowByID,
+                values = {
+                  plot.pedigree(x = ped, col = ColStrain, id = val, cex = .7)
+                },
+                ID = {
+                  plot.pedigree(x = ped, col = ColStrain, id = ID, cex = .7)
+                }, 
+                both = {
+                  valId = paste(ped$ID, val)
+                  plot.pedigree(x = ped, col = ColStrain, id = valId, cex = .7)
+                }
+        )
+      }
+      else {
+      #if the type of column values are numeric values (double/integer...)
+      # #86888A stands for gray, which refers to the missing values 
+      rgb.palette <- colorRampPalette(c(input$SelectedColors, "purple", "#86888A"), space = "rgb")
+      palette(rgb.palette(100))
+      z = get(input$SelectedColumn) * 100
+      switch (input$ShowByID,
+              values = {
+                plot.pedigree(x = ped, col = z, id = val, cex = .7)
+              },
+              ID = {
+                plot.pedigree(x = ped, col = z, id = ID, cex = .7)
+              },
+              both = {
+                valId = paste(ped$ID, val)
+                plot.pedigree(x = ped, col = z, id = valId, cex = .7)
+              }
       )
+      }
+     
       
       #Build subpedigree
       observeEvent(input$SelectedIDs, {
