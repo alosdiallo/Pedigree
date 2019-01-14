@@ -80,8 +80,8 @@ ui <-
                       actionButton(inputId = "reloadApp",label = "Reload App", class="btn-danger")
                )
              ),
-             tags$br(),
-             tags$br(),
+             #tags$br(),
+             #tags$br(),
              tabsetPanel( id = "TheMainTabs", type = "pills",
                           tabPanel( title ="Upload File",
                                     fluidRow(
@@ -284,14 +284,14 @@ server <- function(input, output, session){
         ColStrain <- c(input$SelectedColors)[as.factor(get(input$SelectedColumn))]
         switch (input$ShowByID,
                 values = {
-                  plot.pedigree(x = ped, col = ColStrain, id = val, cex = .7)
+                  plot.pedigree(x = ped, col = ColStrain, id = val, cex = .7, branch = 1, width = 10)
                 },
                 ID = {
-                  plot.pedigree(x = ped, col = ColStrain, id = ID, cex = .7)
+                  plot.pedigree(x = ped, col = ColStrain, id = ID, cex = .7, branch = 1, width = 10)
                 }, 
                 both = {
                   valId = paste(ped$ID, val)
-                  plot.pedigree(x = ped, col = ColStrain, id = valId, cex = .7)
+                  plot.pedigree(x = ped, col = ColStrain, id = valId, cex = .7, branch = 1, width = 10)
                 }
         )
       }
@@ -303,14 +303,14 @@ server <- function(input, output, session){
       z = get(input$SelectedColumn) * 100
       switch (input$ShowByID,
               values = {
-                plot.pedigree(x = ped, col = z, id = val, cex = .7)
+                plot.pedigree(x = ped, col = z, id = val, cex = .7, branch = 1, width = 10)
               },
               ID = {
-                plot.pedigree(x = ped, col = z, id = ID, cex = .7)
+                plot.pedigree(x = ped, col = z, id = ID, cex = .7, branch = 1, width = 10)
               },
               both = {
                 valId = paste(ped$ID, val)
-                plot.pedigree(x = ped, col = z, id = valId, cex = .7)
+                plot.pedigree(x = ped, col = z, id = valId, cex = .7, branch = 1, width = 10)
               }
       )
       }
