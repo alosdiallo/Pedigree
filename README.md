@@ -10,6 +10,8 @@
 - About the title 
 - Kinship2 package
 
+###### Introduction
+
 
     
   
