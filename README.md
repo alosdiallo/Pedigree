@@ -8,6 +8,7 @@
 - Header Requirements
 - Tutorial
 - About the title 
+- Downloading pedigree plots
 - Kinship2 package
 
 ### Introduction
