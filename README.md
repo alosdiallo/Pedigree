@@ -25,7 +25,8 @@ Pedigree plots that are created using family data can be downloaded in the follo
 Other different file formats can be used by adding corresponsing code to PedigreeApp.R .
 
 ### References 
-The application utilizes the following packages and libraries:
+The application utilizes the following R packages and libraries:
+shiny - kinship2 - readxl
 
 
 
