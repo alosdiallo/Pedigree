@@ -2,7 +2,7 @@
   1) You can use the web version of this application through this link: (https://hmsimmunodept.shinyapps.io/PedigreeApp/).
   2) Or you can download the R code and run it locally using Rstudio.
 # Table of Contents 
-- [Introduction] 
+- require "Introduction"
 - Installation process
 - Errors and Troubleshooting 
 - Header Requirements
