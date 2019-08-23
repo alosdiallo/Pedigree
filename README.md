@@ -1,4 +1,4 @@
-# Shiny App vor visualizing genealogical tree
+# Ծառ - Shiny App vor visualizing genealogical tree
   1) You can use the web version of this application through this link: (https://hmsimmunodept.shinyapps.io/PedigreeApp/).
   2) Or you can download the R code and run it locally using Rstudio.
 ## Table of Contents 
