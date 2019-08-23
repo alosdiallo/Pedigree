@@ -26,7 +26,7 @@ Other different file formats can be used by adding corresponsing code to Pedigre
 
 ### References 
 The application utilizes the following R packages:
-shiny - kinship2 - readxl
+shiny - [GitHub](https://cran.r-project.org/web/packages/kinship2/index.html) kinship2 - readxl
 
 
 
