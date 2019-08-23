@@ -11,7 +11,7 @@
 - Kinship2 package
 
 ### Introduction
-
+**Ծառ** is a Shiny App for visualizing genealogical trees. The family data uploaded should be in **xls** or **xlsx** format. It is visualized using [kinship2] package, which handles family information with a pedigree object. 
 
     
   
