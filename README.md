@@ -14,7 +14,7 @@
 - References
 
 ### Introduction
-**ԾաՌR** is a Shiny App for visualizing genealogical trees. The family data uploaded should be in **xls** or **xlsx** format. It is visualized using kinship2 package in R, which handles family information with a pedigree object. Shiny is an open source package built in R, used in builidng interactive web apps directly from R, without requiring knowledge in HTML, CSS,or Javascript. Shiny apps can be run locally from an R session on your computer or can be hosted in the cloud thourgh ShinyServer. 
+**ԾաՌR** is a Shiny App for visualizing genealogical trees. The family data uploaded should be in **xls** or **xlsx** format. It is visualized using [kinship2](https://cran.r-project.org/web/packages/kinship2/index.html) package in R, which handles family information with a pedigree object. Shiny is an open source package built in R, used in builidng interactive web apps directly from R, without requiring knowledge in HTML, CSS,or Javascript. Shiny apps can be run locally from an R session on your computer or can be hosted in the cloud thourgh [ShinyServer](https://www.shinyapps.io/). 
 
 ### Downloading pedigree plots 
 Pedigree plots that are created using family data can be downloaded in the following formats:
@@ -26,7 +26,9 @@ Other different file formats can be used by adding corresponsing code to Pedigre
 
 ### References 
 The application utilizes the following R packages:
-shiny - [GitHub](https://cran.r-project.org/web/packages/kinship2/index.html) kinship2 - readxl
+- [shiny](https://cran.r-project.org/web/packages/shiny/index.html) 
+- [kinship2](https://cran.r-project.org/web/packages/kinship2/index.html)  
+- [readxl](https://cran.r-project.org/web/packages/readxl/index.html)
 
 
 
