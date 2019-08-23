@@ -21,6 +21,7 @@ Pedigree plots that are created using family data can be downloaded in the follo
 - SVG
 - PNG
 - PDF
+
 Other different formats can be added by adding lines of code to PedigreeApp.R .
 
 
