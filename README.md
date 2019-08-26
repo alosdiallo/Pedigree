@@ -25,7 +25,7 @@ The headers required for the family data in the excel sheet should be named as t
 - ID - father - mother - sex
 
 ### About the title
-The origin of the word **ԾաՌ** is Armenian, which means a tree. The IPA prnunciation of this word is *dzar*. The title is named as such to denote an app that can be used to visualize genoalogical or family trees.  
+The origin of the word **ԾաՌ** is Armenian, which means a tree. The IPA prnunciation of this word is *dzar*. The title is named as such to denote an app that can be used to visualize genealogical or family trees.  
 
 ### Downloading pedigree plots 
 Pedigree plots that are created using family data can be downloaded in the following formats:
