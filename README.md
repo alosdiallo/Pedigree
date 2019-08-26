@@ -29,6 +29,9 @@ Otherwise, if the data does not contain any individuals that are affected, the h
 
 Additional headers can be included depending on the type of your data. For instance, if you are using mice data, headers as (*rorg* - *IgA*) could be added, which are features that the user/experimenter might be interested in.
 
+### Tutorial
+Still in process.
+
 ### About the title
 The origin of the word **ԾաՌ** is Armenian, which means a tree. The IPA prnunciation of this word is *dzar*. The title is named as such to denote an app that can be used to visualize genealogical or family trees.  
 
