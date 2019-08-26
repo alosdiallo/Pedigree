@@ -16,6 +16,17 @@
 ### Introduction
 **ԾաՌR** is a Shiny App for visualizing genealogical trees. The family data uploaded should be in **xls** or **xlsx** format. It is visualized using [kinship2](https://cran.r-project.org/web/packages/kinship2/index.html) package in R, which handles family information with a pedigree object. Shiny is an open source package built in R, used in builidng interactive web apps directly from R, without requiring knowledge in HTML, CSS,or Javascript. Shiny apps can be run locally from an R session on your computer or can be hosted in the cloud thourgh [ShinyServer](https://www.shinyapps.io/). 
 
+### Installation process
+
+### Errors and Troubleshooting
+
+### Header Requirements 
+The headers required for the family data in the excel sheet should be named as the folllowing (with the same order):
+- ID - father - mother - sex
+
+### About the title
+The origin of the word **ԾաՌ** is Armenian, which means a tree. The IPA prnunciation of this word is *dzar*. The title is named as such to denote an app that can be used to visualize genoalogical or family trees.  
+
 ### Downloading pedigree plots 
 Pedigree plots that are created using family data can be downloaded in the following formats:
 - SVG
