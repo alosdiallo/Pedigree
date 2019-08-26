@@ -21,7 +21,9 @@
 ### Errors and Troubleshooting
 
 ### Header Requirements 
-The headers required for the family data in the excel sheet should be named as the folllowing (with the same order):\
+For a family data that contains affected indicators, the headers required in the excel sheet should be named as the folllowing (with the same order):\
+**ID** - **father** - **mother** - **sex** - **affected**\
+Otherwise, if the data does not contain any individuals that are affected, the headers should be named as such:\
 **ID** - **father** - **mother** - **sex**
 
 ### About the title
