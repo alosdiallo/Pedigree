@@ -21,11 +21,13 @@
 ### Errors and Troubleshooting
 
 ### Header Requirements 
-For a family data that contains affected indicators, the headers required in the excel sheet should be named as the folllowing (with the same order):\
+For a family data that contains affected indicators, the headers required in the excel sheet should be named as the folllowing:\
 **ID** - **father** - **mother** - **sex** - **affected**\\
 
 Otherwise, if the data does not contain any individuals that are affected, the headers should be named as such:\
 **ID** - **father** - **mother** - **sex**
+
+Additional headers can be included depending on your data. For instance, if you are using mice data, headers could be added as *rorg*, *IgA*, which are features that the user/experimenter might be interested in.
 
 ### About the title
 The origin of the word **ԾաՌ** is Armenian, which means a tree. The IPA prnunciation of this word is *dzar*. The title is named as such to denote an app that can be used to visualize genealogical or family trees.  
