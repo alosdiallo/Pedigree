@@ -22,7 +22,7 @@
 
 ### Header Requirements 
 For a family data that contains affection status, the headers required in the excel sheet should be named as the folllowing:\
-**ID** - **father** - **mother** - **sex** - **affected**\
+**ID** - **father** - **mother** - **sex** - **affected**
 
 Otherwise, if the data does not contain any individuals that are affected, the headers should be named as such:\
 **ID** - **father** - **mother** - **sex**
