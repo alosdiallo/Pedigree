@@ -20,6 +20,11 @@
 ### Installation process
 
 ### Errors and Troubleshooting
+- Incorrect file format: If the data uploaded is not in the proper format, an error will be shown: 
+- For affected individuals... 11111 or 2222
+- Grayed out page
+- Maximum upload size exceeded
+- Shini deploy error
 
 ### Header Requirements 
 For a family data that contains affection status, the headers required in the excel sheet should be named as the folllowing:\
